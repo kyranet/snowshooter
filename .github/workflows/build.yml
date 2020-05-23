@@ -1,0 +1,31 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v2
+      - name: Download Dependencies
+        run: |
+          sudo apt-get -y update
+          sudo apt-get install -y libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev libsdl2-mixer-dev
+      - name: Build Project (Debug)
+        run: |
+          mkdir build_debug
+          cd build_debug
+          cmake -DCMAKE_BUILD_TYPE=Debug -j -- ..
+          make
+      - name: Build Project (Release)
+        run: |
+          mkdir build_release
+          cd build_release
+          cmake -DCMAKE_BUILD_TYPE=Release -j -- ..
+          make
