@@ -1,0 +1,19 @@
+name: Format
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  format:
+    name: format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v2
+      - uses: DoozyX/clang-format-lint-action@v0.5
+        with:
+          source: './src'
+          extensions: 'h,cpp'
