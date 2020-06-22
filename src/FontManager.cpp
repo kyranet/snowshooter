@@ -1,4 +1,5 @@
 #include "FontManager.h"
+
 #include "Font.h"
 
 FontManager* FontManager::instance_ = nullptr;

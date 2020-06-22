@@ -1,5 +1,6 @@
 #pragma once
 #include <SDL_scancode.h>
+
 #include <string>
 
 // Window dimensions

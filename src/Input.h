@@ -1,5 +1,6 @@
 #pragma once
 #include <array>
+
 #include "Constants.h"
 #include "SDL.h"
 #include "Vector2D.h"

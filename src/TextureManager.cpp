@@ -1,4 +1,5 @@
 #include "TextureManager.h"
+
 #include "Game.h"
 #include "SnowShooterError.h"
 #include "Texture.h"

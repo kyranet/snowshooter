@@ -1,6 +1,7 @@
 #pragma once
 #include <list>
 #include <map>
+
 #include "ResourceManager.h"
 
 class Texture;

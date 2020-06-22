@@ -1,4 +1,5 @@
 #include "SceneMachine.h"
+
 #include "Scene.h"
 
 SceneMachine::SceneMachine() = default;

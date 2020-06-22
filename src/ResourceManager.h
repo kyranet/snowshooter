@@ -1,5 +1,6 @@
 #pragma once
 #include <SDL.h>
+
 #include <map>
 
 template <class V>
