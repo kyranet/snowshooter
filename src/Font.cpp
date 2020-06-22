@@ -1,4 +1,5 @@
 #include "Font.h"
+
 #include "SDLError.h"
 
 Font::Font() = default;
