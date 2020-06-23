@@ -8,6 +8,6 @@ A game built on top of SDL2.
 
 ### Debian/Ubuntu
 
-```ssh-session
+```sh-session
 $ apt-get install libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-net-dev
 ```
