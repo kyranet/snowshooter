@@ -207,7 +207,7 @@ void Texture::render(const Vector2D<int>& position) const {
   render(rectangle);
 }
 
-void Texture::render(const SDL_Rect& dest, double, SDL_Rect* clip) const {
+void Texture::render(const SDL_Rect& dest, double, const SDL_Rect* clip) const {
   if (texture_ != nullptr) {
     if (clip == nullptr) {
       const auto size = getCalculatedSize();

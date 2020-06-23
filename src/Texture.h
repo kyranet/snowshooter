@@ -90,7 +90,7 @@ class Texture final {
   void tick();
   void render(const Vector2D<int>& position) const;
   void render(const SDL_Rect& dest, double angle = 0,
-              SDL_Rect* clip = nullptr) const;
+              const SDL_Rect* clip = nullptr) const;
   void renderFrame(const SDL_Rect& dest, Uint16 frame, double angle = 0) const;
   void close();
 };

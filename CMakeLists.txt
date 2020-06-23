@@ -43,7 +43,7 @@ find_package(SDL2_net REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR} ${SDL2_IMAGE_INCLUDE_DIR} ${SDL2_TTF_INCLUDE_DIR} ${SDL2_MIXER_INCLUDE_DIR} ${SDL2_NET_INCLUDE_DIR})
 
 file(COPY assets DESTINATION .)
-add_executable(snowshooter src/main.cpp src/Game.cpp src/Game.h src/Texture.cpp src/Texture.h src/Vector2D.h src/Input.cpp src/Input.h src/GameObject.cpp src/GameObject.h src/Scene.cpp src/Scene.h src/TimePool.cpp src/TimePool.h src/Constants.h src/SnowShooterError.h src/SDLError.h src/Font.cpp src/Font.h src/FontManager.cpp src/FontManager.h src/AudioManager.cpp src/AudioManager.h src/SDLAudioManager.cpp src/SDLAudioManager.h src/TextureManager.cpp src/TextureManager.h src/ResourceManager.h src/SceneMachine.cpp src/SceneMachine.h src/MenuScene.cpp src/MenuScene.h src/EventListener.cpp src/EventListener.h src/GameManager.cpp src/GameManager.h)
+add_executable(snowshooter src/main.cpp src/Game.cpp src/Game.h src/Texture.cpp src/Texture.h src/Vector2D.h src/Input.cpp src/Input.h src/GameObject.cpp src/GameObject.h src/Scene.cpp src/Scene.h src/TimePool.cpp src/TimePool.h src/Constants.h src/SnowShooterError.h src/SDLError.h src/Font.cpp src/Font.h src/FontManager.cpp src/FontManager.h src/AudioManager.cpp src/AudioManager.h src/SDLAudioManager.cpp src/SDLAudioManager.h src/TextureManager.cpp src/TextureManager.h src/ResourceManager.h src/SceneMachine.cpp src/SceneMachine.h src/MenuScene.cpp src/MenuScene.h src/EventListener.cpp src/EventListener.h src/GameManager.cpp src/GameManager.h src/Tileset.cpp src/Tileset.h)
 
 # Link the libraries and install them.
 target_link_libraries(snowshooter ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY} ${SDL2_TTF_LIBRARIES} ${SDL2_MIXER_LIBRARY} ${SDL2_NET_LIBRARY})

@@ -7,7 +7,6 @@
 #include "SDLError.h"
 #include "SDL_mixer.h"
 #include "SDL_ttf.h"
-#include "Scene.h"
 #include "SceneMachine.h"
 #include "Texture.h"
 #include "TextureManager.h"
@@ -48,6 +47,8 @@ void Game::load() {
   loaded_ = true;
 
   auto textures = TextureManager::getInstance();
+  textures->add("winter-tileset", "../assets/images/vx-winter-tileset.png", 40,
+                22);
   textures->init();
 
   auto fonts = FontManager::getInstance();
