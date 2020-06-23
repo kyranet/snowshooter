@@ -1,6 +1,8 @@
 #include "Tileset.h"
+
 #include <fstream>
 #include <sstream>
+
 #include "SnowShooterError.h"
 #include "Texture.h"
 
