@@ -15,10 +15,23 @@ void Server::ServerClient::initialize() {
            (ipAddress >> 16u) & 0xFFu, (ipAddress >> 8u) & 0xFFu, ipAddress & 0xFFu,
            remoteIP_->port);
 
-    status_ = ServerClientStatus::RUNNING;
-    Server::pushEvent({EventDataType::CONNECT, &ipAddress});
+    status_ = ClientStatus::RUNNING;
+    Server::pushEvent({ServerEventDataType::CONNECT, this, &ipAddress});
 
     while (Server::getRunning()) {
+        // Handle game events on queue
+        client_event_data_t ed;
+        while (clientPollEvent(&ed) != 0) {
+            switch (ed.type) {
+                case ClientEventDataType::ASK_NAME:
+                    printf("Asked for the name!");
+                    char message[1];
+                    message[0] = ed.type;
+                    SDLNet_TCP_Send(socket_, message, 1);
+                    break;
+            }
+        }
+
         // Read the buffer from the client
         char message[1024];
         int len = SDLNet_TCP_Recv(socket_, message, 1024);
@@ -31,31 +44,59 @@ void Server::ServerClient::initialize() {
         printf("Received: %.*s\n", len, message);
         if (message[0] == 'q') {
             printf("Disconnecting on a q\n");
-            Server::pushEvent({EventDataType::DISCONNECT, this});
+            Server::pushEvent({ServerEventDataType::DISCONNECT, this, nullptr});
             break;
         }
     }
 
-    status_ = ServerClientStatus::CLOSED;
+    status_ = ClientStatus::CLOSED;
     SDLNet_TCP_Close(socket_);
 }
 
 Server::ServerClient::ServerClient(TCPsocket socket) : socket_(socket) {}
 
-bool Server::ServerClient::isPending() { return status_ == ServerClientStatus::PENDING; }
+bool Server::ServerClient::isPending() { return status_ == ClientStatus::PENDING; }
 
-bool Server::ServerClient::isRunning() { return status_ == ServerClientStatus::RUNNING; }
+bool Server::ServerClient::isRunning() { return status_ == ClientStatus::RUNNING; }
 
-bool Server::ServerClient::isClosed() { return status_ == ServerClientStatus::CLOSED; }
+bool Server::ServerClient::isClosed() { return status_ == ClientStatus::CLOSED; }
 
 void Server::ServerClient::create(TCPsocket socket) {
     auto *client = new ServerClient(socket);
     client->initialize();
 }
 
+SDL_mutex *Server::ServerClient::getMutex() {
+    if (event_mutex_ == nullptr) event_mutex_ = SDL_CreateMutex();
+    return event_mutex_;
+}
+
+void Server::ServerClient::pushEvent(const Server::client_event_data_t &event) {
+    if (SDL_LockMutex(getMutex())) {
+        events_.push(event);
+        SDL_UnlockMutex(event_mutex_);
+    } else {
+        fprintf(stderr, "Couldn't lock mutex: %s", SDL_GetError());
+    }
+}
+
+int Server::ServerClient::clientPollEvent(Server::client_event_data_t *event) {
+    if (SDL_LockMutex(getMutex())) {
+        if (events_.empty()) return 0;
+        *event = events_.front();
+        events_.pop();
+
+        SDL_UnlockMutex(event_mutex_);
+        return 1;
+    }
+
+    fprintf(stderr, "Couldn't lock mutex: %s", SDL_GetError());
+    return 0;
+}
+
 Server *Server::instance_ = nullptr;
-SDL_mutex *Server::mutex_ = nullptr;
-std::queue<Server::event_data_t> Server::events_{};
+SDL_mutex *Server::event_mutex_ = nullptr;
+std::queue<Server::server_event_data_t> Server::events_{};
 
 Server::Server() {
     if (SDL_Init(0) == -1) {
@@ -83,6 +124,7 @@ Server::Server() {
 Server::~Server() {
     done_ = true;
     SDL_AtomicSet(&running_, 0);
+    if (server_ != nullptr) SDLNet_TCP_Close(server_);
 }
 
 void Server::run() {
@@ -97,14 +139,15 @@ void Server::run() {
         }
 
         // Handle game events on queue
-        event_data_t ed;
+        server_event_data_t ed;
         while (clientPollEvent(&ed) != 0) {
             switch (ed.type) {
-                case Server::EventDataType::DISCONNECT:
+                case ServerEventDataType::DISCONNECT:
                     printf("Client Disconnected.");
                     break;
-                case EventDataType::CONNECT:
+                case ServerEventDataType::CONNECT:
                     printf("Client Connected %d!", *reinterpret_cast<uint32_t *>(ed.data));
+                    ed.sender->pushEvent({ClientEventDataType::ASK_NAME, nullptr});
                     break;
             }
         }
@@ -148,26 +191,26 @@ int Server::getRunning() {
 }
 
 SDL_mutex *Server::getMutex() {
-    if (mutex_ == nullptr) mutex_ = SDL_CreateMutex();
-    return mutex_;
+    if (event_mutex_ == nullptr) event_mutex_ = SDL_CreateMutex();
+    return event_mutex_;
 }
 
-void Server::pushEvent(const Server::event_data_t &event) {
+void Server::pushEvent(const Server::server_event_data_t &event) {
     if (SDL_LockMutex(getMutex())) {
         events_.push(event);
-        SDL_UnlockMutex(mutex_);
+        SDL_UnlockMutex(event_mutex_);
     } else {
         fprintf(stderr, "Couldn't lock mutex: %s", SDL_GetError());
     }
 }
 
-int Server::clientPollEvent(Server::event_data_t *event) {
+int Server::clientPollEvent(Server::server_event_data_t *event) {
     if (SDL_LockMutex(getMutex())) {
         if (events_.empty()) return 0;
         *event = events_.front();
         events_.pop();
 
-        SDL_UnlockMutex(mutex_);
+        SDL_UnlockMutex(event_mutex_);
         return 1;
     }
 
