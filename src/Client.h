@@ -1,6 +1,8 @@
 #pragma once
 
 #include <queue>
+#include "SDL_atomic.h"
+#include "SDL_net.h"
 
 class Client {
 private:

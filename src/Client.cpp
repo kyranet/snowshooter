@@ -1,8 +1,5 @@
 #include "Client.h"
 
-#include "SDL.h"
-#include "SDL_net.h"
-
 Client *Client::instance_ = nullptr;
 
 Client::Client() {
