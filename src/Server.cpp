@@ -137,7 +137,7 @@ bool Server::ServerGame::end() {
   return true;
 }
 
-bool Server::ServerGame::check() {
+void Server::ServerGame::check() {
   const auto now = std::time(nullptr);
   const auto server = Server::getInstance();
 

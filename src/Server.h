@@ -88,7 +88,7 @@ class Server {
 
     bool end();
 
-    bool check();
+    void check();
   };
 
   typedef struct {
