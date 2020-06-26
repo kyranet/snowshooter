@@ -67,6 +67,8 @@ Client::ClientEventBase* Client::parseContent(char* message) {
       return new ClientEventGameUnavailable();
     case GAME_READY:
       return new ClientEventGameReady();
+    case GAME_END:
+      return new ClientEventGameEnd();
     case ASK_NAME: {
       std::string name(message + 1, length - 1);
       return new ClientEventGameAskName(name);

@@ -1,19 +1,101 @@
 #pragma once
 
+#include <array>
 #include <queue>
+#include <string>
 #include <vector>
 
 #include "SDL.h"
 #include "SDL_net.h"
 
+enum ClientEventDataType;
+
 class Server {
   enum ClientStatus { PENDING, RUNNING, CLOSED };
 
-  enum ClientEventDataType { ASK_NAME };
+  typedef struct {
+    uint32_t id;
+    std::string name;
+  } user_t;
 
   typedef struct {
-    ClientEventDataType type;
-    void* data;
+    uint32_t id;
+    std::string name;
+    bool ready;
+  } potential_player_t;
+
+  typedef struct {
+    uint32_t userID;
+    std::string name;
+    uint8_t id;
+    float x;
+    float y;
+    float direction;
+    float speed;
+    bool alive;
+    time_t availableShoot;
+    time_t availableRevive;
+  } player_t;
+
+  typedef struct {
+    uint32_t id;
+    float x;
+    float y;
+    float direction;
+    float speed;
+    time_t expires;
+  } bullet_t;
+
+  class ServerGame {
+    enum class Status { OPEN, CLOSED };
+
+    Status status_ = Status::OPEN;
+    std::vector<player_t> users_{};
+
+    uint8_t queueSize_ = 0;
+    uint8_t readySize_ = 0;
+    uint32_t bulletID_ = 0;
+    std::array<potential_player_t, 8> queue_{};
+    std::vector<player_t> players_{};
+    std::vector<bullet_t> bullets_{};
+
+    static char getCharacterFrom(int type);
+    static void write8(char* buffer, char input, size_t offset) {
+      buffer[offset] = input;
+    }
+    static void write8(char* buffer, uint8_t input, size_t offset) {
+      write8(buffer, static_cast<char>(input + '0'), offset);
+    }
+    static void write32(char* buffer, const char* input, size_t offset) {
+      memcpy(buffer + offset, input, 4);
+    }
+    static void write32(char* buffer, uint32_t input, size_t offset) {
+      write32(buffer, std::to_string(input).c_str(), offset);
+    }
+    static void write32(char* buffer, float input, size_t offset) {
+      write32(buffer, std::to_string(static_cast<int>(input * 10)).c_str(),
+              offset);
+    }
+
+   public:
+    bool addPlayer(const user_t& user);
+
+    bool readyPlayer(const user_t& user);
+
+    bool removePlayer(const user_t& user);
+
+    bool shoot(const user_t& user);
+
+    bool ready();
+
+    bool end();
+
+    bool check();
+  };
+
+  typedef struct {
+    char* data;
+    int length;
   } client_event_data_t;
 
   class ServerClient {
@@ -70,6 +152,7 @@ class Server {
   TCPsocket server_ = nullptr;
   IPaddress ip_{};
   bool done_ = false;
+  ServerGame* game_;
 
   /**
    *  \brief Polls for currently pending events.
@@ -94,6 +177,8 @@ class Server {
   static int getRunning();
 
   static SDL_mutex* getMutex();
+
+  void broadcast(char* message, int length);
 
   static void pushEvent(const server_event_data_t& event);
 };

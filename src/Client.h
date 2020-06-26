@@ -7,93 +7,99 @@
 #include "SDL_atomic.h"
 #include "SDL_net.h"
 
+enum ClientEventDataType {
+  /**
+   * \brief Command sent via broadcast to all connected users announcing a new
+   * game. \payload nullptr.
+   */
+  GAME_AVAILABLE,
+
+  /**
+   * \brief Command sent via broadcast to all connected users announcing the
+   * lobby has been locked. \payload nullptr.
+   */
+  GAME_UNAVAILABLE,
+
+  /**
+   * \brief Command sent via broadcast to all users announcing the game start.
+   * \note Not to be confused with `ClientEventDataType::PLAYER_READY`.
+   * \payload nullptr.
+   */
+  GAME_READY,
+
+  /**
+   * \brief Command sent via broadcast to all users announcing the game end.
+   * \payload nullptr.
+   */
+  GAME_END,
+
+  /**
+   * \brief Command from the server to ask for the name.
+   * \payload nullptr on success.
+   */
+  ASK_NAME,
+
+  /**
+   * \brief Command sent via broadcast to all players to add a new one.
+   * \payload Player's position and name. (Health is always full).
+   */
+  PLAYER_ADD,
+
+  /**
+   * \brief Command sent via broadcast to all users announcing one player has
+   * clicked on ready. \payload Amount of players ready.
+   */
+  PLAYER_READY,
+
+  /**
+   * \brief Command sent via broadcast to all players to remove one.
+   * \payload Player's name.
+   */
+  PLAYER_REMOVE,
+
+  /**
+   * \brief Command sent via broadcast to all players to mark a player as
+   * dead. \payload Player's name.
+   */
+  PLAYER_DEATH,
+
+  /**
+   * \brief Command sent via broadcast to all players to mark a player as
+   * alive. \payload Player's name.
+   */
+  PLAYER_REVIVE,
+
+  /**
+   * \brief Command sent to joining players to add all the current players.
+   * \payload Players health, position, direction, speed, and name.
+   */
+  PLAYERS_SYNC,
+
+  /**
+   * \brief Command sent via broadcast to all players to add a new bullet.
+   * \payload The bullet information, including the origin (player's shooter)
+   * and the direction.
+   */
+  SHOT_CREATE,
+
+  /**
+   * \brief Command sent via broadcast to all players to remove a bullet.
+   * \payload The bullet's ID, sent from the
+   * `ClientEventDataType::SHOT_CREATE` payload.
+   */
+  SHOT_DESTROY,
+
+  /**
+   * \brief Invalid code, used to check boundaries.
+   */
+  INVALID
+};
+
 class Client {
  private:
   SDL_atomic_t running_{};
   IPaddress ip_{};
   TCPsocket socket_;
-
-  enum ClientEventDataType {
-    /**
-     * \brief Command sent via broadcast to all connected users announcing a new
-     * game. \payload nullptr.
-     */
-    GAME_AVAILABLE,
-
-    /**
-     * \brief Command sent via broadcast to all connected users announcing the
-     * lobby has been locked. \payload nullptr.
-     */
-    GAME_UNAVAILABLE,
-
-    /**
-     * \brief Command sent via broadcast to all users announcing the game start.
-     * \note Not to be confused with `ClientEventDataType::PLAYER_READY`.
-     * \payload nullptr.
-     */
-    GAME_READY,
-
-    /**
-     * \brief Command from the server to ask for the name.
-     * \payload nullptr on success.
-     */
-    ASK_NAME,
-
-    /**
-     * \brief Command sent via broadcast to all players to add a new one.
-     * \payload Player's position and name. (Health is always full).
-     */
-    PLAYER_ADD,
-
-    /**
-     * \brief Command sent via broadcast to all users announcing one player has
-     * clicked on ready. \payload Amount of players ready.
-     */
-    PLAYER_READY,
-
-    /**
-     * \brief Command sent via broadcast to all players to remove one.
-     * \payload Player's name.
-     */
-    PLAYER_REMOVE,
-
-    /**
-     * \brief Command sent via broadcast to all players to mark a player as
-     * dead. \payload Player's name.
-     */
-    PLAYER_DEATH,
-
-    /**
-     * \brief Command sent via broadcast to all players to mark a player as
-     * alive. \payload Player's name.
-     */
-    PLAYER_REVIVE,
-
-    /**
-     * \brief Command sent to joining players to add all the current players.
-     * \payload Players health, position, direction, speed, and name.
-     */
-    PLAYERS_SYNC,
-
-    /**
-     * \brief Command sent via broadcast to all players to add a new bullet.
-     * \payload The bullet information, including the origin (player's shooter)
-     * and the direction.
-     */
-    SHOT_CREATE,
-
-    /**
-     * \brief Command sent via broadcast to all players to remove a bullet.
-     * \payload The bullet's ID, sent from the
-     * `ClientEventDataType::SHOT_CREATE` payload.
-     */
-    SHOT_DESTROY,
-
-    /**
-     * \brief Invalid code, used to check boundaries.
-     */
-    INVALID
-  };
 
   class ClientEventBase {
    public:
@@ -112,6 +118,10 @@ class Client {
   class ClientEventGameReady : public ClientEventBase {
    public:
     ClientEventGameReady() : ClientEventBase(GAME_READY) {}
+  };
+  class ClientEventGameEnd : public ClientEventBase {
+   public:
+    ClientEventGameEnd() : ClientEventBase(GAME_END) {}
   };
   class ClientEventGameAskName : public ClientEventBase {
    public:
