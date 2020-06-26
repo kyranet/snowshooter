@@ -8,8 +8,6 @@
 #include "SDL.h"
 #include "SDL_net.h"
 
-enum ClientEventDataType;
-
 class Server {
   enum ClientStatus { PENDING, RUNNING, CLOSED };
 

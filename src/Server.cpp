@@ -1,8 +1,9 @@
 #include "Server.h"
-#include "Client.h"
 
 #include <ctime>
 #include <string>
+
+#include "Client.h"
 
 bool Server::ServerGame::addPlayer(const Server::user_t& user) {
   if (status_ != Status::OPEN) return false;
