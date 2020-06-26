@@ -1,5 +1,7 @@
 #include "Server.h"
 
+#include <string>
+
 void Server::ServerClient::initialize() {
     /* get the clients IP and port number */
     remoteIP_ = SDLNet_TCP_GetPeerAddress(socket_);
@@ -61,9 +63,10 @@ bool Server::ServerClient::isRunning() { return status_ == ClientStatus::RUNNING
 
 bool Server::ServerClient::isClosed() { return status_ == ClientStatus::CLOSED; }
 
-void Server::ServerClient::create(TCPsocket socket) {
+int Server::ServerClient::create(TCPsocket socket) {
     auto *client = new ServerClient(socket);
     client->initialize();
+    return 0;
 }
 
 SDL_mutex *Server::ServerClient::getMutex() {
@@ -95,6 +98,7 @@ int Server::ServerClient::clientPollEvent(Server::client_event_data_t *event) {
 }
 
 Server *Server::instance_ = nullptr;
+SDL_atomic_t Server::running_{};
 SDL_mutex *Server::event_mutex_ = nullptr;
 std::queue<Server::server_event_data_t> Server::events_{};
 
@@ -103,6 +107,7 @@ Server::Server() {
         printf("SDL_Init: %s\n", SDL_GetError());
         exit(1);
     }
+
     if (SDLNet_Init() == -1) {
         printf("SDLNet_Init: %s\n", SDLNet_GetError());
         exit(2);
@@ -153,11 +158,14 @@ void Server::run() {
         }
 
         // Free memory
-        for (size_t i = clients_.size(); i >= 0; --i) {
+        size_t i = 0;
+        while (i < clients_.size()) {
             auto *client = clients_[i];
             if (client->isClosed()) {
                 clients_.erase(clients_.begin() + static_cast<long>(i));
                 delete client;
+            } else {
+                ++i;
             }
         }
 
@@ -170,7 +178,7 @@ void Server::run() {
             continue;
         }
 
-        auto *thread = SDL_CreateThread(reinterpret_cast<SDL_ThreadFunction>(ServerClient::create), "", client);
+        auto *thread = SDL_CreateThread(reinterpret_cast<SDL_ThreadFunction>(ServerClient::create), "client", client);
         SDL_DetachThread(thread);
     }
 

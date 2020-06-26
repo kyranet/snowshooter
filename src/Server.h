@@ -55,7 +55,7 @@ class Server {
 
         void pushEvent(const client_event_data_t &event);
 
-        void static create(TCPsocket socket);
+        static int create(TCPsocket socket);
     };
 
     enum ServerEventDataType {

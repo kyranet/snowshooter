@@ -1,6 +1,7 @@
+#include "Client.h"
+
 #include "SDL.h"
 #include "SDL_net.h"
-#include "Client.h"
 
 Client *Client::instance_ = nullptr;
 
